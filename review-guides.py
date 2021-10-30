@@ -1,6 +1,5 @@
 #!/usr/bin/env python
-import argparse, sys
-import re
+import argparse, sys, platform, re
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--delimiter", "-d", default=';')
@@ -20,7 +19,11 @@ def ask_question(in_str, failed):
             failed.append(f"For the question `{items[0]}`, `{', '.join(answers)}` was wrong! The correct answers were `{', '.join(items[1:])}`")
         else:
             failed.append(f"For the question `{items[0]}`, `{', '.join(answers)}` was wrong! The correct answer was `{items[1]}`")
-    print("\033[F\033[F\n\033[F")
+
+    if platform.system() == "Linux":
+        os.system("clear")
+    elif platform.system() == "Windows":
+        os.system("cls")
 
 
 try:
