@@ -4,32 +4,35 @@ from bs4 import BeautifulSoup
 parser = argparse.ArgumentParser()
 parser.add_argument("link", type=str, nargs="?")
 parser.add_argument("--limit", "-l", type=int, default=None)
-parser.add_argument("--offset", "-O", type=int, default=0)
+parser.add_argument("--offset", "-O", type=int, default=None)
 parser.add_argument("--sort", action="store_const", const=True, default=False)
 args = parser.parse_args()
 
-if args.offset < 0:
+if args.offset < -1:
     print("Offset must be greater than or equal to 0!")
     exit()
 
-limit = args.limit + args.offset if args.limit else None
+
+def get_limit():
+    if args.limit is None or args.offset is None:
+        return None
+    return args.limit + args.offset
+
+limit = get_limit()
 
 total_digits = len(str(limit)) if limit else 8
 
 
 
 def sort_dir():
-    names = [filename for filename in glob.glob("./*.gif")]
+    names = [filename.replace("./", "") for filename in glob.glob("./*.gif")]
     longest = 0
     for filename in names:
-        if filename.startswith("./"):
-            filename = filename[2:]
-            
-            l = len(filename.split()[4].split(".")[0])
-            if l > longest:
-                longest = l
+        l = len(filename.split()[4].split(".")[0])
+        if l > longest:
+            longest = l
             # ['El', 'Goonish', 'Shive', '-', '058.gif']
-    
+
     for filename in names:
         l = filename.split()
         n = l[4].split(".")[0]
@@ -39,8 +42,15 @@ def sort_dir():
     print(longest)
 
 
-
-
+def auto_longest():
+    biggest = 0
+    names = [filename.replace("./", "") for filename in glob.glob("./*.gif")]
+    for filename in names:
+        b = int(filename.split()[4].split(".")[0])
+        if b > biggest:
+            biggest = b
+    if args.offset is None:
+        args.offset = biggest
 
 async def get_page(link, times=args.offset, names = []):
     try:
@@ -101,6 +111,7 @@ if args.sort:
     sort_dir()
 else:
     if args.link:
+        auto_longest()
         asyncio.run(get_page(args.link.split()[0]))
     else:
         print("Link is required if flag 'sort' is not passed!")

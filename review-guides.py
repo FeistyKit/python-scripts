@@ -48,7 +48,7 @@ def old_ask_question(in_str, failed, num, to_save=None):
         os.system("cls")
 
 
-def new_ask_question(in_str, failed, num, to_save=None):
+def new_ask_question(in_str, failed, num, to_save=[]):
     copied_str = in_str
     in_str = in_str.replace("%l", "")
     in_str = in_str.strip(" ;")
@@ -75,8 +75,7 @@ def new_ask_question(in_str, failed, num, to_save=None):
             correct.append(list(map(lambda x: x.strip().lower(), list(f.split("|")))))
 
     if not optionscmp(correct, list(map(lambda x: x.lower(), answers))):
-        if to_save is not None:
-            to_save.append(copied_str)
+        to_save.append(copied_str)
 
         if len(items[1:]) > 1:
             failed.append(f"For the question `{items[0]}`, `{', '.join(answers)}` was wrong! The correct answers were `{', '.join(items[1:])}`.")
@@ -119,11 +118,13 @@ def run():
     elif platform.system() == "Windows":
         os.system("cls")
 
+    print(f"Output: {args.output}")
+
     for i, q in questions:
         if args.newparse:
-            new_ask_question(q, failed, i)
+            new_ask_question(q, failed, i, to_save)
         else:
-            old_ask_question(q, failed, i)
+            old_ask_question(q, failed, i, to_save)
     if failed:
         print('\n'.join(failed))
         print(f"You got `{len(failed)}` wrong!", file=sys.stderr)
