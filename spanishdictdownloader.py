@@ -6,27 +6,36 @@ parser.add_argument("infile", type=str)
 parser.add_argument("--outfile", type=str, default="output.txt")
 args = parser.parse_args()
 
-async def download(word: str):
-    page = requests.get(f"https://www.spanishdict.com/translate/{word.lower()}")
+async def download_en(link: str) -> str:
+    l = f"https://www.spanishdict.com{link}"
+    print(f"Download_en from {l}")
+    page = requests.get(l)
 
     soup = BeautifulSoup(page.content, "html.parser")
+
+    return soup.find(id="quickdef1-en").a.string
+
+async def download_es(word: str):
+    l = f"https://www.spanishdict.com/translate/{word.lower()}"
+    print(f"Download_es from {l}")
+    page = requests.get(l)
+
+    soup = BeautifulSoup(page.content, "html.parser")
+
+    en_raw = soup.find(id="quickdef1-es").a
     
-    es = str(soup.find(id="headword-es").h1.string)
+    en_text = en_raw.string
 
-    if ">feminine noun</a>" in page.text:
-        es = "la " + es
-    elif ">masculine noun</a>" in page.text:
-        es = "el " + es
+    es = await download_en(en_raw['href'])
 
-    en = str(soup.find(id="quickdef1-es").a.string)
-    return es, en
+    return es, en_text
 
 async def run():
     to_translate = []
     with open(args.infile, "r") as f:
         for line in f.readlines():
             to_translate.append(line.strip())
-    objects = [download(item) for item in to_translate] 
+    objects = [download_es(item) for item in to_translate] 
 
     results = await asyncio.gather(*objects)
 
