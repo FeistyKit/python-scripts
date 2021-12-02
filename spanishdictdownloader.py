@@ -15,18 +15,25 @@ async def download_en(link: str) -> str:
     return soup.find(id="quickdef1-en").a.string
 
 async def download_es(word: str):
-    l = f"https://www.spanishdict.com/translate/{word.lower()}"
-    page = requests.get(l)
+    try:
+        l = f"https://www.spanishdict.com/translate/{word.lower()}"
+        page = requests.get(l)
 
-    soup = BeautifulSoup(page.content, "html.parser")
+        soup = BeautifulSoup(page.content, "html.parser")
 
-    en_raw = soup.find(id="quickdef1-es").a
-    
-    en_text = en_raw.string
+        en_raw = soup.find(id="quickdef1-es").a
 
-    es = await download_en(en_raw['href'])
+        en_text = en_raw.string
 
-    return es, en_text
+        es_raw = download_en(en_raw['href'])
+        es = await es_raw
+        if word not in es:
+            return None, f"Could not find a conclusive definition for {word}!"
+
+        print(f"Downloaded definition for {word}!")
+        return es, en_text
+    except Exception:
+        return None, f"Could not find definition for {word}!"
 
 async def run():
     to_translate = []
@@ -40,8 +47,11 @@ async def run():
     terms = []
 
     for d in results:
-        str = f"{d[0]} = {d[1]}"
-        terms.append(str)
+        if d[0] is not None:
+            str = f"{d[0]} = {d[1]}"
+            terms.append(str)
+        else:
+            terms.insert(0, d[1])
 
     with open(args.outfile, "w") as f:
         f.write("\n".join(terms))
