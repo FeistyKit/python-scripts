@@ -8,7 +8,6 @@ args = parser.parse_args()
 
 async def download_en(link: str) -> str:
     l = f"https://www.spanishdict.com{link}"
-    print(f"Download_en from {l}")
     page = requests.get(l)
 
     soup = BeautifulSoup(page.content, "html.parser")
@@ -17,7 +16,6 @@ async def download_en(link: str) -> str:
 
 async def download_es(word: str):
     l = f"https://www.spanishdict.com/translate/{word.lower()}"
-    print(f"Download_es from {l}")
     page = requests.get(l)
 
     soup = BeautifulSoup(page.content, "html.parser")
