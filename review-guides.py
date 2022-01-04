@@ -9,6 +9,7 @@ parser.add_argument("--shuffle", "-s", action="store_const", const=True, default
 parser.add_argument("--output", "-o", action="store_const", const=True, default=False)
 parser.add_argument("--outfile", nargs=1, type=str)
 parser.add_argument("--newparse", "-n", action="store_const", const=True, default=False, help="Whether or not to use the new type of parsing")
+parser.add_argument("--immediate", "-I", action="store_const", const=True, default=False)
 parser.add_argument("file", nargs=1, type=str)
 args = parser.parse_args()
 
@@ -81,6 +82,13 @@ def new_ask_question(in_str, failed, num, to_save=[]):
             failed.append(f"For the question `{items[0]}`, `{', '.join(answers)}` was wrong! The correct answers were `{', '.join(items[1:])}`.")
         else:
             failed.append(f"For the question `{items[0]}`, `{', '.join(answers)}` was wrong! The correct answer was `{items[1]}`.")
+        if args.immediate:
+            f = ' '.join(items[1:])
+            print("The correct answer is actually \"", f, "\"! Please type that in!", sep="")
+            buf = ""
+            while buf.lower() != f.lower():
+                buf = input("Please enter in the correct answer: ")
+
 
     if platform.system() == "Linux":
         os.system("clear")
@@ -106,7 +114,7 @@ def run():
         print(f"Could not open file `{args.file[0]}`!", file=sys.stderr)
         sys.exit(1)
 
-    questions = list(enumerate(content.splitlines()))
+    questions = [i for i in enumerate(content.splitlines()) if not i[1].startswith('#')]
     if args.shuffle:
         random.shuffle(questions)
 
@@ -139,4 +147,5 @@ def run():
         print(f"Could not open file `{args.outfile}`!", file=sys.stderr)
         sys.exit(1)
 
-run()
+if __name__ == "__main__":
+    run()
